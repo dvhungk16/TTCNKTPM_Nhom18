@@ -41,6 +41,7 @@ public class OrderController {
                                                @RequestHeader("Authorization")String jwt) throws UserException, OrderException {
         User user = userService.findUserByJwt(jwt);
         Order order = orderService.findOrderById(orderId);
+
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 }

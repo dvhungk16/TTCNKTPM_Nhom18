@@ -76,27 +76,16 @@ public class PaymentController {
         }
     }
     @GetMapping("/payments")
-    public ResponseEntity<ApiResponse> redirect(@RequestParam(name = "payment_id") String paymentId,
+    public ResponseEntity<ApiResponse> redirect(
                                                 @RequestParam(name = "order_id") Long orderId) throws OrderException, RazorpayException {
         Order order = orderService.findOrderById(orderId);
-        RazorpayClient razorpay = new RazorpayClient(apiKey, apiSecret);
-        try {
-            Payment payment = razorpay.payments.fetch(paymentId);
 
-            if(payment.get("status").equals("captured")) {
-                order.getPaymentDetails().setPaymentId(paymentId);
-                order.getPaymentDetails().setStatus("COMPLETED");
-                order.setOrderStatus("PLACED");
-                orderRepository.save(order);
-            }
-
+        order.setOrderStatus("CONFIRMED");
+        orderService.deliveredOrder(orderId);
+        orderRepository.save(order);
             ApiResponse res = new ApiResponse();
             res.setMessage("Your order get placed");
             res.setStatus(true);
             return new ResponseEntity<ApiResponse>(res, HttpStatus.ACCEPTED);
-        }
-        catch (Exception e) {
-            throw new RazorpayException(e.getMessage());
-        }
     }
 }
